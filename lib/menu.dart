@@ -8,9 +8,9 @@ class MyHomePage extends StatelessWidget {
     final String kelas = "B";
 
     final List<ItemHomepage> items = [
-    ItemHomepage("All Product", Icons.shop),
-    ItemHomepage("My Products", Icons.shop),
-    ItemHomepage("Create Product", Icons.add),
+    ItemHomepage("All Product", Icons.shop, Colors.blue),
+    ItemHomepage("My Products", Icons.shop, Colors.green),
+    ItemHomepage("Create Product", Icons.add, Colors.red),
     ];
 
     @override
@@ -19,9 +19,9 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       // AppBar adalah bagian atas halaman yang menampilkan judul.
       appBar: AppBar(
-        // Judul aplikasi "Football News" dengan teks putih dan tebal.
+        // Judul aplikasi dengan teks putih dan tebal.
         title: const Text(
-          'Football News',
+          'Football Shop',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -60,7 +60,7 @@ class MyHomePage extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.only(top: 16.0),
                     child: Text(
-                      'Selamat datang di Football News',
+                      'Selamat datang di Football Shop',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
@@ -104,7 +104,7 @@ class ItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       // Menentukan warna latar belakang dari tema aplikasi.
-      color: Theme.of(context).colorScheme.secondary,
+      color: item.color,
       // Membuat sudut kartu melengkung.
       borderRadius: BorderRadius.circular(12),
 
@@ -183,6 +183,7 @@ class InfoCard extends StatelessWidget {
 class ItemHomepage {
  final String name;
  final IconData icon;
+ final Color color;
 
- ItemHomepage(this.name, this.icon);
+ ItemHomepage(this.name, this.icon, this.color);
 }
