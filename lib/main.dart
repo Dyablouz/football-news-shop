@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:football_shop/menu.dart';
+import 'package:football_shop/screens/menu.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,13 +12,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Football Shop',
       theme: ThemeData(
-         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue)
-        .copyWith(secondary: Colors.blueAccent[400]),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue)
+            .copyWith(secondary: Colors.blueAccent[400]),
         useMaterial3: true,
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
