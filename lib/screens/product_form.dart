@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:football_shop/widgets/left_drawer.dart';
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:football_shop/screens/menu.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key});
@@ -36,52 +40,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
     super.dispose();
   }
 
-  void _resetForm() {
-    _formKey.currentState!.reset();
-    _nameController.clear();
-    _priceController.clear();
-    _descriptionController.clear();
-    _thumbnailController.clear();
-    setState(() {
-      _selectedCategory = _categories.first;
-      _isFeatured = false;
-    });
-  }
-
-  void _showSummaryDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Produk berhasil tersimpan'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Nama: ${_nameController.text}'),
-              Text('Harga: Rp${_priceController.text}'),
-              Text('Kategori: $_selectedCategory'),
-              Text('Deskripsi: ${_descriptionController.text}'),
-              Text('Thumbnail: ${_thumbnailController.text}'),
-              Text('Featured: ${_isFeatured ? "Ya" : "Tidak"}'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _resetForm();
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tambah Produk'),
@@ -225,9 +186,37 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.save_alt),
                   label: const Text("Save"),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _showSummaryDialog();
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {                      
+                      final response = await request.postJson(
+                        "http://localhost:8000/create-flutter/",
+                        jsonEncode({
+                          "name": _nameController.text,
+                          "price": int.parse(_priceController.text),
+                          "description": _descriptionController.text,
+                          "thumbnail": _thumbnailController.text,
+                          "category": _selectedCategory,
+                          "is_featured": _isFeatured,
+                        }),
+                      );
+                      if (context.mounted) {
+                        if (response['status'] == 'success') {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(
+                            content: Text("Product successfully saved!"),
+                          ));
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const MyHomePage()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(
+                            content: Text("Something went wrong, please try again."),
+                          ));
+                        }
+                      }
                     }
                   },
                 ),

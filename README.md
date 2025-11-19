@@ -33,3 +33,27 @@ Padding menjaga jarak antar elemen form. SingleChildScrollView membungkus Column
 
 4. Bagaimana kamu menyesuaikan warna tema agar aplikasi Football Shop memiliki identitas visual yang konsisten dengan brand toko?
 Pertama-tama, kita menetapkan warna yang kita inginkan dalam aplikasi football-shop, lalu tetapkan palet brand sebagai ColorScheme di MaterialApp.theme. Setelah itu, penggunaan warna pada theme-level seperti AppBarTheme, EvelatedButtonTheme dan lain lain, selalu ambil warna dari Theme.of(context).colorScheme. Dengan begitu, jika dilakukan perubahan warna MaterialApp.Theme, semua warna pada keseluruhan aplikasi juga bakal ikut berubah.
+
+Tugas 9
+
+1. Jelaskan mengapa kita perlu membuat model Dart saat mengambil/mengirim data JSON? Apa konsekuensinya jika langsung memetakan Map<String, dynamic> tanpa model (terkait validasi tipe, null-safety, maintainability)?
+Model Dart mengikat struktur dan tipe data secara eksplisit, sehingga konversi JSON ke objek terkontrol, mendapat pemeriksaan null-safety, dan IDE dapat memberi autocompletion. Kalau langsung pakai Map<String, dynamic>, ada kemungkinan kita salah ketik keynya dan hal tersebut dapat menyebabkan runtime error. Selain itu, tanpa model, struktur data jadi tersebar di seluruh kode, sulit di-refactor kalau backend berubah, dan lebih susah dibaca/dirawat dalam jangka panjang.
+
+2. Apa fungsi package http dan CookieRequest dalam tugas ini? Jelaskan perbedaan peran http vs CookieRequest?
+Http menyediakan HTTP client umum tanpa state sesi bawaan, cocok untuk pemanggilan stateless. CookieRequest adalah wrapper yang menyimpan cookie dan header autentikasi Django, mempermudah login/register/logout dan request yang butuh sesi. Di tugas ini http tidak dipakai langsung karena CookieRequest sudah menangani sesi dan parsing JSON.
+
+3. Jelaskan mengapa instance CookieRequest perlu untuk dibagikan ke semua komponen di aplikasi Flutter!
+CookieRequest dibagikan lewat Provider agar satu instance menempel di seluruh widget tree. Dengan begitu, cookie/login state konsisten di setiap halaman tanpa harus meneruskan objek lewat konstruktor manual, serta perubahan state login akan secara otomatis rebuild jika diperlukan.
+
+4. Jelaskan konfigurasi konektivitas yang diperlukan agar Flutter dapat berkomunikasi dengan Django. Mengapa kita perlu menambahkan 10.0.2.2 pada ALLOWED_HOSTS, mengaktifkan CORS dan pengaturan SameSite/cookie, dan menambahkan izin akses internet di Android? Apa yang akan terjadi jika konfigurasi tersebut tidak dilakukan dengan benar?
+Agar Flutter bisa berkomunikasi dengan Django, kita perlu beberapa konfigurasi jaringan: di sisi Django, 10.0.2.2 harus ditambahkan ke ALLOWED_HOSTS karena di emulator Android alamat itu adalah jembatan ke localhost, sehingga request dari aplikasi tidak dianggap ilegal dan diblokir.
+Lalu CORS harus diaktifkan dan pengaturan SameSite/cookie disesuaikan supaya origin Flutter diizinkan mengakses resource Django dan cookie sesi (hasil login) bisa dikirim bolak-balik dengan benar. Di sisi Android, kita wajib menambahkan permission INTERNET di AndroidManifest.xml agar aplikasi bisa membuka koneksi HTTP/HTTPS. Jika konfigurasi ini tidak dilakukan dengan benar, request bisa gagal dengan error seperti 403/blocked host, error CORS di sisi klien, cookie login tidak pernah tersimpan sehingga selalu dianggap belum autentikasi.
+
+5. Jelaskan mekanisme pengiriman data mulai dari input hingga dapat ditampilkan pada Flutter!
+Pengguna mengisi form Flutter -> Flutter memvalidasi input lalu mengirim JSON via CookieRequest.postJson ke endpoint Django -> Django memproses, menyimpan ke database, dan merespons JSON status -> Flutter membaca respons, menampilkan SnackBar/alert, dan melakukan navigasi atau refresh list → list FutureBuilder memanggil endpoint JSON Django, memetakan hasil ke model Product, lalu membangun UI berdasarkan objek tersebut.
+
+6. Jelaskan mekanisme autentikasi dari login, register, hingga logout. Mulai dari input data akun pada Flutter ke Django hingga selesainya proses autentikasi oleh Django dan tampilnya menu pada Flutter!
+Pada login/register, Flutter mengumpulkan username/password -> dikirim ke endpoint /auth/login/ atau /auth/register/ via CookieRequest (POST dengan cookie) -> Django memverifikasi (authenticate/create_user), mengembalikan status+username, dan menyetel cookie sesi -> CookieRequest menyimpan cookie sehingga request selanjutnya dianggap sudah login. Logout memanggil /auth/logout/, Django menghapus sesi, CookieRequest membersihkan cookie, Flutter menavigasi ke LoginPage. Setelah login sukses, halaman menu dan drawer memakai instance CookieRequest yang sama untuk mem-fetch data.
+
+7. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step! (bukan hanya sekadar mengikuti tutorial)!
+Pertama-tama, saya melakukan integrasi autentikasi antar Django dan Flutter terlebih dahulu dengan menambahkan folder baru authentication pada Django saya. Lalu menambahkan pbp_django_auth, http dan izin Internet. Lalu saya melakukan fetch data menggunakan endpoint JSON dari Django untuk ditampilkan di Flutter. Setelah itu, saya mengimplementasikan fungsi login/logout/register/logout. Untuk bagian filter produk, saya menambahkan user_id sebagai JsonResponse yang nantinya akan digunakan untuk memfilter produk.
